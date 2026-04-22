@@ -41,7 +41,7 @@ export function Hero() {
         <div className="absolute inset-0 bg-gradient-to-t from-[#FAFAFA] via-[#FAFAFA]/20 to-transparent z-10" />
       </div>
 
-      <div className="relative z-20 text-center px-4 w-full max-w-7xl mx-auto pt-32">
+      <div className="relative z-20 text-center px-4 w-full max-w-7xl mx-auto pt-24 md:pt-32">
         <motion.div
           variants={containerVariants}
           initial="hidden"
@@ -57,8 +57,8 @@ export function Hero() {
           </motion.div>
 
           <motion.div variants={itemVariants} className="mb-10 w-full relative">
-            <h1 className="text-6xl md:text-8xl lg:text-[10rem] font-medium tracking-tighter text-[#0A0A0A] leading-[0.8] relative z-10">
-              <span className="font-serif italic text-black/80 block -mb-4 md:-mb-12 ml-[-20%]">Lumina</span>
+            <h1 className="text-5xl md:text-8xl lg:text-[10rem] font-medium tracking-tighter text-[#0A0A0A] leading-[0.8] relative z-10">
+              <span className="font-serif italic text-black/80 block -mb-2 md:-mb-12 ml-[-20%]">Lumina</span>
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#0A0A0A] via-[#0A0A0A]/80 to-[#0A0A0A]/40">Pearl</span>
             </h1>
             {/* Internal Glow Behind Text */}

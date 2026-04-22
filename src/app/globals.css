@@ -1,15 +1,12 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand: #0A0A0C;
-  --color-accent: #D4AF37;
-  --color-background: #FAFAFA;
-  --color-foreground: #070709;
+  --color-brand: #2874F0; /* Flipkart Blue */
+  --color-accent: #FB641B; /* Flipkart Orange */
+  --color-background: #F1F3F6;
+  --color-foreground: #212121;
   
-  --color-glow-1: rgba(212, 175, 55, 0.25); /* Gentle Gold */
-  --color-glow-2: rgba(255, 182, 193, 0.2); /* Soft Peach/Pink */
-  
-  --font-sans: var(--font-inter), "Space Mono", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
 }
 
@@ -24,49 +21,44 @@
   }
 }
 
-/* Custom Utilities for Ethereal Theme */
 @layer utilities {
-  .glass-panel {
-    @apply bg-white/60 backdrop-blur-2xl border border-white shadow-[0_8px_30px_rgb(0,0,0,0.06)];
+  .white-panel {
+    @apply bg-white border border-gray-100 shadow-[0_2px_4px_rgba(0,0,0,0.02)] rounded-lg;
   }
   
-  .aurora-glow {
-    position: absolute;
-    width: 60vw;
-    height: 60vw;
-    background: radial-gradient(circle at center, var(--color-glow-1) 0%, transparent 50%);
-    filter: blur(80px);
-    border-radius: 50%;
-    z-index: 0;
-    pointer-events: none;
-    animation: drift 20s infinite ease-in-out alternate;
+  .btn-primary {
+    @apply bg-[#2874F0] text-white font-bold px-6 py-2.5 rounded shadow-sm hover:bg-[#2368D8] transition-all active:scale-95 hover:shadow-md;
   }
-  
-  .aurora-glow-secondary {
-    position: absolute;
-    width: 50vw;
-    height: 50vw;
-    background: radial-gradient(circle at center, var(--color-glow-2) 0%, transparent 50%);
-    filter: blur(80px);
-    border-radius: 50%;
-    z-index: 0;
-    pointer-events: none;
-    animation: drift-reverse 25s infinite ease-in-out alternate;
+
+  .btn-secondary {
+    @apply bg-[#FB641B] text-white font-bold px-6 py-2.5 rounded shadow-sm hover:bg-[#E65615] transition-all active:scale-95 hover:shadow-md;
+  }
+
+  .text-glow {
+    text-shadow: 0 0 15px rgba(40, 116, 240, 0.3);
   }
 }
 
-@keyframes drift {
-  0% { transform: translate(0, 0) scale(1); opacity: 0.8; }
-  100% { transform: translate(15%, 10%) scale(1.2); opacity: 1; }
+/* Standard Scrollbar for Marketplace feel */
+::-webkit-scrollbar {
+  width: 8px;
 }
-
-@keyframes drift-reverse {
-  0% { transform: translate(0, 0) scale(1); opacity: 0.6; }
-  100% { transform: translate(-10%, -15%) scale(1.1); opacity: 0.9; }
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+::-webkit-scrollbar-thumb {
+  background: #cdcdcd;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #a5a5a5;
 }
 
 /* Hide scrollbar completely to enforce clean look but allow scroll */
-::-webkit-scrollbar {
-  width: 0;
-  background: transparent;
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }

@@ -8,14 +8,11 @@ import { FloatingWhatsApp } from "@/components/ui/FloatingWhatsApp";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { SearchModal } from "@/components/search/SearchModal";
 
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-});
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Kora | Premium Korean Fashion & Jewelry",
-  description: "Modern Seoul Minimalist aesthetic e-commerce store.",
+  title: "Kora Market | Your High-Fidelity Tech Hub",
+  description: "Experience the next generation of e-commerce.",
 };
 
 export default function RootLayout({
@@ -24,14 +21,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col pt-16 bg-background text-foreground relative z-0">
-        <div className="fixed inset-0 z-[-1] overflow-hidden pointer-events-none">
-          <div className="aurora-glow top-[10%] left-[20%]"></div>
-          <div className="aurora-glow-secondary bottom-[20%] right-[10%]"></div>
-        </div>
+    <html lang="en" className="h-full">
+      <body className={`${inter.className} min-h-full flex flex-col bg-[#F1F3F6] text-[#212121] relative z-0`}>
         <Navbar />
-        <main className="flex-1 relative z-10">{children}</main>
+        <main className="flex-1 relative z-10 w-full min-h-screen">
+          {children}
+        </main>
         <Footer />
         <MiniCart />
         <AuthModal />

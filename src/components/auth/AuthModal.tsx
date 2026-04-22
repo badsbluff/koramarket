@@ -41,7 +41,7 @@ export function AuthModal() {
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-white border border-black/5 shadow-2xl z-50 rounded-2xl overflow-hidden glass-panel"
+            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[calc(100%-2rem)] max-w-md bg-white border border-black/5 shadow-2xl z-50 rounded-2xl overflow-hidden glass-panel"
           >
             <div className="flex justify-end p-4 absolute top-0 right-0 z-10">
               <button onClick={closeAuthModal} className="text-black/40 hover:text-black transition-colors p-2">
@@ -58,12 +58,20 @@ export function AuthModal() {
                   <h2 className="text-2xl font-light text-black mb-2">Welcome, {user.name}</h2>
                   <p className="text-sm font-mono text-black/50 mb-8">{user.email}</p>
                   
-                  <button 
-                    onClick={logout}
-                    className="w-full bg-black text-white py-4 text-xs font-medium uppercase tracking-[0.2em] rounded-xl hover:bg-black/80 transition-colors"
-                  >
-                    Sign Out
-                  </button>
+                  <div className="space-y-3">
+                    <button 
+                      onClick={() => { closeAuthModal(); window.location.href = '/profile'; }}
+                      className="w-full bg-black text-white py-4 text-xs font-medium uppercase tracking-[0.2em] rounded-xl hover:bg-black/80 transition-colors shadow-md"
+                    >
+                      Enter Vault
+                    </button>
+                    <button 
+                      onClick={logout}
+                      className="w-full bg-transparent border border-black/10 text-black py-4 text-xs font-medium uppercase tracking-[0.2em] rounded-xl hover:bg-black/5 transition-colors"
+                    >
+                      Sign Out
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <form onSubmit={handleSubmit}>

@@ -33,12 +33,12 @@ export function ProductGrid() {
           className="flex flex-col items-start mb-32 border-b border-black/10 pb-8"
         >
           <span className="text-[10px] uppercase tracking-[0.4em] text-black/60 mb-4 font-mono">Structural Wear</span>
-          <h2 className="text-4xl md:text-6xl font-light text-black mb-4 tracking-tighter">
+          <h2 className="text-3xl md:text-6xl font-light text-black mb-4 tracking-tighter">
             Architectural <span className="font-serif italic text-black/80">Uniform</span>
           </h2>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12">
+        <div className="grid grid-cols-2 md:grid-cols-12 gap-3 md:gap-12">
           {DUMMY_PRODUCTS.map((item, index) => (
             <motion.div 
               key={item.id}
@@ -49,8 +49,8 @@ export function ProductGrid() {
               className={`${item.colSpan} relative group`}
             >
               <div className="absolute -inset-4 bg-white/40 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-1000 rounded-[3rem]" />
-              <Link href={`/products/${item.product_id}`} className="block block w-full relative z-10">
-                <div className={`${item.aspect} w-full overflow-hidden bg-white/80 relative rounded-2xl glass-panel p-2`}>
+              <Link href={`/products/${item.product_id}`} className="block w-full relative z-10">
+                <div className={`${item.aspect} w-full overflow-hidden bg-white/80 relative rounded-xl md:rounded-2xl glass-panel p-1 md:p-2`}>
                   <img
                     src={item.image}
                     alt={item.title}
@@ -59,20 +59,18 @@ export function ProductGrid() {
                   
                   {/* Glassmorphism Details Panel */}
                   <div className="absolute bottom-6 left-6 right-6 flex items-end justify-between z-20">
-                    <div className="glass-panel px-6 py-4 rounded-xl relative overflow-hidden backdrop-blur-md bg-white/60 shadow-lg">
-                      <div className="absolute inset-0 bg-white/20 blur-xl"></div>
-                      <h3 className="text-xs font-sans tracking-[0.1em] text-black mb-1 uppercase font-medium">
+                      <h3 className="text-[10px] md:text-xs font-sans tracking-[0.1em] text-black mb-0.5 md:mb-1 uppercase font-medium line-clamp-1">
                         {item.title}
                       </h3>
-                      <p className="text-[10px] text-black/70 font-mono tracking-widest">{item.size} — ₹{item.price}</p>
+                      <p className="text-[8px] md:text-[10px] text-black/70 font-mono tracking-widest uppercase">₹{item.price}</p>
                     </div>
 
                     {/* Add to Cart floating ring */}
                     <button 
                       onClick={(e) => handleAddToCart(e, item)}
-                      className="w-12 h-12 rounded-full glass-panel flex items-center justify-center backdrop-blur-md bg-white/60 text-black hover:bg-black hover:text-white hover:scale-110 transition-all duration-300 shadow-xl"
+                      className="w-8 h-8 md:w-12 md:h-12 rounded-full glass-panel flex items-center justify-center backdrop-blur-md bg-white/60 text-black hover:bg-black hover:text-white transition-all duration-300 shadow-lg"
                     >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="md:w-3.5 md:h-3.5">
                         <line x1="12" y1="5" x2="12" y2="19"></line>
                         <line x1="5" y1="12" x2="19" y2="12"></line>
                       </svg>

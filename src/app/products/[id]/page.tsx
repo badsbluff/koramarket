@@ -1,201 +1,199 @@
 'use client';
 
-import { useState, useRef } from 'react';
-import { X, Ruler } from 'lucide-react';
 import { useCartStore } from '@/store/useCartStore';
-import { motion, useScroll, useTransform } from 'framer-motion';
-
-const PRODUCT = {
-  id: 'prod_a1',
-  title: 'Carbon Mesh Coat',
-  price: 8999,
-  description: 'A masterpiece of structural avant-garde design. Tailored from a premium proprietary carbon-infused wool blend. Its stark architectural shoulders and relaxed, flowing body create a silhouette that absorbs light and memory.',
-  material: '80% Wool, 20% Carbon-Nylon Matrix',
-  images: [
-    'https://images.unsplash.com/photo-1544022613-e87ca75a784a?q=80&w=1000&auto=format&fit=crop',
-    'https://images.unsplash.com/photo-1539533113208-f6df8cc8b543?q=80&w=1000&auto=format&fit=crop'
-  ],
-  sizes: ['XS', 'S', 'M', 'L']
-};
+import { useWishlistStore } from '@/store/useWishlistStore';
+import { ALL_PRODUCTS } from '@/store/useSearchStore';
+import { ProductCard } from '@/components/products/ProductCard';
+import { ShoppingBag, Star, Tag, CreditCard, ChevronRight, MapPin, Share2, Heart } from 'lucide-react';
+import Link from 'next/link';
+import { useParams, useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 
 export default function ProductDetailPage() {
-  const [selectedSize, setSelectedSize] = useState<string | null>(null);
-  const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
-  const { addItem, openCart } = useCartStore();
-  const infoRef = useRef(null);
+  const { id } = useParams();
+  const router = useRouter();
+  const { addItem } = useCartStore();
+  const { toggleItem, isInWishlist } = useWishlistStore();
+  
+  // Find product from master database
+  const product = ALL_PRODUCTS.find(p => p.product_id === id) || ALL_PRODUCTS[0];
+  const isWishlisted = isInWishlist(product.product_id);
 
-  const { scrollYProgress } = useScroll({
-    target: infoRef,
-    offset: ["start end", "end start"]
-  });
-  const y = useTransform(scrollYProgress, [0, 1], [50, -50]);
+  // Related products (same category, exclude current)
+  const relatedProducts = ALL_PRODUCTS
+    .filter(p => p.category === product.category && p.product_id !== product.product_id)
+    .slice(0, 4);
 
   const handleAddToCart = () => {
-    if (!selectedSize) {
-      alert("Please select a size.");
-      return;
-    }
-    addItem({
-      id: PRODUCT.id,
-      product_id: PRODUCT.id,
-      title: PRODUCT.title,
-      price: PRODUCT.price,
-      quantity: 1,
-      image: PRODUCT.images[0],
-      size: selectedSize
+    addItem({ ...product, quantity: 1, id: product.id });
+  };
+
+  const handleBuyNow = () => {
+    addItem({ ...product, quantity: 1, id: product.id });
+    router.push('/checkout');
+  };
+
+  const handleToggleWishlist = () => {
+    toggleItem({ 
+      product_id: product.product_id, 
+      title: product.title, 
+      price: product.price, 
+      image: product.image 
     });
-    openCart();
   };
 
   return (
-    <div className="bg-[#FAFAFA] min-h-screen text-black pt-24 md:pt-0 relative overflow-hidden">
-      {/* Background Ambience */}
-      <div className="absolute top-0 right-0 w-[80vw] h-[80vw] md:w-[40vw] md:h-[40vw] rounded-full bg-[#D4AF37]/5 blur-[150px] pointer-events-none mix-blend-multiply" />
-      
-      <div className="flex flex-col md:flex-row relative z-10">
-        {/* Sticky Editorial Gallery on Desktop */}
-        <div className="w-full md:w-1/2 md:h-screen md:sticky md:top-0 overflow-y-auto hide-scrollbar flex flex-col border-r border-black/5 bg-[#FAFAFA]">
-          {PRODUCT.images.map((img, idx) => (
-            <motion.div 
-               key={idx} 
-               className="w-full h-[80vh] md:h-screen shrink-0 relative bg-[#FAFAFA]"
-               initial={{ opacity: 0 }}
-               whileInView={{ opacity: 1 }}
-               viewport={{ amount: 0.5 }}
-               transition={{ duration: 1 }}
-            >
-              <img src={img} alt="" className="w-full h-full object-cover object-center grayscale-[10%]" />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#FAFAFA] via-[#FAFAFA]/10 to-transparent" />
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Product Info */}
-        <div ref={infoRef} className="w-full md:w-1/2 flex items-center justify-center p-8 lg:p-24 bg-transparent relative">
-          
-          <motion.div 
-            className="w-full max-w-md relative z-10"
-            style={{ y }}
-          >
-            <div className="mb-4">
-              <span className="text-[10px] uppercase tracking-[0.4em] font-mono text-black/50">Outerwear</span>
-            </div>
-            <h1 className="text-4xl md:text-6xl font-light text-black mb-6 leading-tight tracking-tighter">
-              {PRODUCT.title}
-            </h1>
-            <p className="text-xl text-black/80 mb-12 font-mono tracking-widest">₹{PRODUCT.price}</p>
-            
-            <div className="mb-12">
-              <div className="flex justify-between items-center mb-6 border-b border-black/10 pb-4">
-                <span className="text-[10px] uppercase tracking-[0.3em] font-mono text-black/70">Select Size</span>
-                <button 
-                  onClick={() => setIsSizeGuideOpen(true)}
-                  className="text-[10px] uppercase tracking-[0.3em] text-black/90 flex items-center hover:text-black transition-colors border border-black/10 px-3 py-1.5 rounded-full"
-                >
-                  <Ruler className="w-3 h-3 mr-2" /> Size Guide
-                </button>
-              </div>
-              <div className="grid grid-cols-4 gap-4">
-                {PRODUCT.sizes.map(size => (
-                  <button
-                    key={size}
-                    onClick={() => setSelectedSize(size)}
-                    className={`py-4 text-[10px] uppercase font-mono tracking-[0.2em] transition-all duration-300 rounded-lg backdrop-blur-md shadow-sm
-                      ${selectedSize === size 
-                        ? 'border border-black glass-panel text-black bg-white/80 shadow-[0_8px_30px_rgba(0,0,0,0.08)]' 
-                        : 'border border-black/10 text-black/60 hover:border-black/30 bg-white/40 hover:bg-white/80'
-                      }`}
-                  >
-                    {size}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <motion.button 
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={handleAddToCart}
-              className="w-full glass-panel bg-white/80 text-black py-5 text-[11px] uppercase tracking-[0.3em] font-medium hover:bg-black hover:text-white transition-colors rounded-xl mb-16 shadow-xl border border-black/5"
-            >
-              Add to Cart
-            </motion.button>
-
-            <div className="space-y-8 border-t border-black/10 pt-12">
-              <div>
-                <h3 className="text-[10px] uppercase tracking-[0.3em] text-black mb-4 font-mono">Description</h3>
-                <p className="text-sm text-black/60 font-light leading-relaxed">{PRODUCT.description}</p>
-              </div>
-              <div>
-                <h3 className="text-[10px] uppercase tracking-[0.3em] text-black mb-4 font-mono">Material</h3>
-                <p className="text-sm text-black/60 font-light leading-relaxed">{PRODUCT.material}</p>
-              </div>
-            </div>
-          </motion.div>
+    <div className="bg-[#F1F3F6] min-h-screen pb-24">
+      {/* Breadcrumbs */}
+      <div className="bg-white border-b border-gray-100 py-3 scroll-mt-24">
+        <div className="max-w-[1400px] mx-auto px-4 flex items-center gap-2 text-[11px] font-medium text-gray-400">
+          <Link href="/" className="hover:text-[#2874F0]">Home</Link>
+          <ChevronRight className="w-3 h-3" />
+          <Link href={`/apparel?category=${encodeURIComponent(product.category)}`} className="hover:text-[#2874F0]">{product.category}</Link>
+          <ChevronRight className="w-3 h-3" />
+          <span className="text-gray-900 font-bold">{product.title}</span>
         </div>
       </div>
 
-      {/* Size Guide Modal with Framer Motion */}
-      {isSizeGuideOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 glass-panel bg-[#FAFAFA]/80 backdrop-blur-2xl">
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="bg-white w-full max-w-2xl shadow-2xl relative border border-black/5 rounded-2xl overflow-hidden"
-          >
-            <div className="flex justify-between items-center p-8 border-b border-black/5 bg-[#FAFAFA]">
-              <h2 className="text-[11px] font-mono uppercase tracking-[0.3em] text-black/90">Sizing Reference</h2>
-              <button onClick={() => setIsSizeGuideOpen(false)} className="text-black/40 hover:text-black transition-colors">
-                <X className="w-6 h-6" strokeWidth={1} />
-              </button>
-            </div>
-            <div className="p-8 bg-white">
-              <table className="w-full text-left font-light">
-                <thead className="border-b border-black/10 text-black/40">
-                  <tr>
-                    <th className="py-6 px-6 text-[10px] uppercase tracking-[0.2em]">Size</th>
-                    <th className="py-6 px-6 text-[10px] uppercase tracking-[0.2em]">Standard</th>
-                    <th className="py-6 px-6 text-[10px] uppercase tracking-[0.2em] text-right">Chest (in)</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-black/5 text-black/80 text-sm">
-                  <tr className="hover:bg-black/5 transition-colors">
-                     <td className="py-6 px-6 font-mono">S</td>
-                     <td className="py-6 px-6">XS</td>
-                     <td className="py-6 px-6 text-right text-black/60 font-mono">32 - 34</td>
-                  </tr>
-                  <tr className="hover:bg-black/5 transition-colors">
-                     <td className="py-6 px-6 font-mono">M</td>
-                     <td className="py-6 px-6">S</td>
-                     <td className="py-6 px-6 text-right text-black/60 font-mono">34 - 36</td>
-                  </tr>
-                  <tr className="hover:bg-black/5 transition-colors">
-                     <td className="py-6 px-6 font-mono">L</td>
-                     <td className="py-6 px-6">M</td>
-                     <td className="py-6 px-6 text-right text-black/60 font-mono">36 - 38</td>
-                  </tr>
-                  <tr className="hover:bg-black/5 transition-colors">
-                     <td className="py-6 px-6 font-mono">XL</td>
-                     <td className="py-6 px-6">L</td>
-                     <td className="py-6 px-6 text-right text-black/60 font-mono">38 - 40</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </motion.div>
+      <div className="max-w-[1400px] mx-auto px-4 pt-4">
+        <div className="bg-white rounded shadow-sm p-4 lg:p-8 flex flex-col lg:flex-row gap-8 lg:gap-12 min-h-[600px]">
+          
+          {/* Left: Image Section */}
+          <div className="w-full lg:w-[450px] shrink-0">
+             <div className="sticky top-24">
+                <div className="aspect-square bg-white border border-gray-100 rounded p-4 flex items-center justify-center relative overflow-hidden group">
+                   <img 
+                    src={product.image} 
+                    className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110" 
+                    alt={product.title}
+                    onError={(e) => { (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1560393464-5c69a73c5770?q=80&w=600&auto=format&fit=crop'; }}
+                   />
+                   <div className="absolute top-4 right-4 flex flex-col gap-2">
+                      <button 
+                        onClick={handleToggleWishlist}
+                        className={`p-2.5 rounded-full border border-gray-100 shadow-sm transition-all ${isWishlisted ? 'bg-red-50 border-red-100 text-red-500' : 'bg-white/80 hover:bg-white text-gray-400'}`}
+                      >
+                         <Heart className={`w-5 h-5 ${isWishlisted ? 'fill-current' : ''}`} />
+                      </button>
+                      <button className="p-2.5 rounded-full border border-gray-100 bg-white/80 hover:bg-white text-gray-400 shadow-sm transition-all">
+                         <Share2 className="w-5 h-5" />
+                      </button>
+                   </div>
+                </div>
+                
+                {/* Action Buttons */}
+                <div className="grid grid-cols-2 gap-3 mt-4">
+                   <button 
+                    onClick={handleAddToCart}
+                    className="bg-[#ff9f00] text-white py-4 rounded-sm font-black uppercase text-sm flex items-center justify-center gap-2 hover:shadow-md transition-all active:scale-95"
+                   >
+                     <ShoppingBag className="w-5 h-5" /> Add to Cart
+                   </button>
+                   <button 
+                    onClick={handleBuyNow}
+                    className="bg-[#fb641b] text-white py-4 rounded-sm font-black uppercase text-sm flex items-center justify-center gap-2 hover:shadow-md transition-all active:scale-95"
+                   >
+                     <CreditCard className="w-5 h-5" /> Buy Now
+                   </button>
+                </div>
+             </div>
+          </div>
+
+          {/* Right: Info Section */}
+          <div className="flex-1">
+             <div className="mb-4">
+                <h1 className="text-xl font-medium text-gray-800 mb-2">{product.title}</h1>
+                <div className="flex items-center gap-3">
+                   <div className="flex items-center gap-1 bg-[#388e3c] text-white text-xs font-bold px-1.5 py-0.5 rounded-sm">
+                      {product.rating} <Star className="w-3 h-3 fill-current" />
+                   </div>
+                   <span className="text-sm font-bold text-gray-400">{(product.ratingCount / 1000).toFixed(1)}K Ratings & 182 Reviews</span>
+                   <img src="https://static-assets-web.flixcart.com/fk-p-linchpin-web/fk-cp-zion/img/fa_62673a.png" className="h-[18px]" alt="Assured" />
+                </div>
+             </div>
+
+             <div className="mb-6">
+                <p className="text-[#388e3c] text-sm font-bold mb-1">Special Price</p>
+                <div className="flex items-end gap-3 font-medium">
+                   <span className="text-3xl font-bold">${product.price.toLocaleString()}</span>
+                   <span className="text-gray-400 line-through text-sm">${product.originalPrice.toLocaleString()}</span>
+                   <span className="text-[#388e3c] font-bold">{product.discount}% off</span>
+                </div>
+             </div>
+
+             {/* Offers Section */}
+             <div className="mb-8 space-y-4">
+                <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider">Available Offers</h3>
+                <div className="space-y-2">
+                   {[
+                     'Bank Offer: 5% Unlimited Cashback on Kora Axis Bank Credit Card',
+                     'Special Price: Get extra $100 off (price inclusive of cashback/coupon)',
+                     'Partner Offer: Buy this product and get upto $50 off on next Home & Living purchase',
+                   ].map((offer, i) => (
+                     <div key={i} className="flex gap-3 items-start text-sm text-gray-700">
+                        <Tag className="w-4 h-4 text-[#388e3c] shrink-0 mt-0.5" />
+                        <span className="font-medium">{offer}</span>
+                        <Link href="#" className="text-[#2874f0] font-bold text-[10px] uppercase min-w-fit">T&C</Link>
+                     </div>
+                   ))}
+                </div>
+             </div>
+
+             {/* Delivery Section */}
+             <div className="grid grid-cols-1 md:grid-cols-12 gap-8 py-6 border-t border-gray-100">
+                <div className="md:col-span-2 text-gray-400 text-[13px] font-bold uppercase">Delivery</div>
+                <div className="md:col-span-10">
+                   <div className="flex items-center gap-2 border-b border-[#2874f0] w-fit mb-4 pb-1 cursor-pointer">
+                      <MapPin className="w-4 h-4 text-[#2874f0]" />
+                      <span className="text-sm font-bold">New York, NY - 10001</span>
+                      <button className="text-[#2874f0] font-bold text-xs ml-4 uppercase">Change</button>
+                   </div>
+                   <p className="text-sm font-bold text-gray-800">Delivery by 25 Oct, Sunday | <span className="text-[#388e3c]">Free</span></p>
+                   <p className="text-xs text-gray-400">If ordered within 12 hrs 34 mins</p>
+                </div>
+             </div>
+
+             {/* Highlights Section */}
+             <div className="grid grid-cols-1 md:grid-cols-12 gap-8 py-6 border-t border-gray-100">
+                <div className="md:col-span-2 text-gray-400 text-[13px] font-bold uppercase">Highlights</div>
+                <div className="md:col-span-10">
+                   <ul className="grid grid-cols-1 md:grid-cols-2 gap-y-2 gap-x-8 text-sm text-gray-700 font-medium list-disc list-inside">
+                      <li>Premium {product.category} engineering</li>
+                      <li>High-durability materials</li>
+                      <li>1 Year Manufacturer Warranty</li>
+                      <li>Standard retail quality control</li>
+                   </ul>
+                </div>
+             </div>
+
+             {/* Description Section */}
+             <div className="grid grid-cols-1 md:grid-cols-12 gap-8 py-6 border-t border-gray-100">
+                <div className="md:col-span-2 text-gray-400 text-[13px] font-bold uppercase">Description</div>
+                <div className="md:col-span-10">
+                   <p className="text-sm text-gray-600 leading-relaxed font-medium">
+                      The {product.title} represents the pinnacle of modern design in the {product.category} sector. 
+                      Crafted for performance and aesthetics, it delivers an unparalleled user experience 
+                      backed by artisanal craftsmanship and cutting-edge quality control.
+                   </p>
+                </div>
+             </div>
+
+          </div>
         </div>
-      )}
-      
-      <style dangerouslySetInnerHTML={{__html: `
-        .hide-scrollbar::-webkit-scrollbar {
-          display: none;
-        }
-        .hide-scrollbar {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-      `}} />
+
+        {/* Related Products Section */}
+        {relatedProducts.length > 0 && (
+          <div className="mt-12 bg-white rounded shadow-sm p-8">
+            <h2 className="text-xl font-bold text-gray-900 mb-8">Related Products</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
+              {relatedProducts.map(p => (
+                <ProductCard key={p.id} product={p as any} />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
