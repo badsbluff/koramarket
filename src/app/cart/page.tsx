@@ -3,7 +3,7 @@
 import { useCartStore, CartItem } from '@/store/useCartStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import Link from 'next/link';
-import { ShoppingBag, Trash2, Plus, Minus, ShieldCheck, ChevronRight, Heart } from 'lucide-react';
+import { ShoppingBag, Trash2, Plus, Minus, ShieldCheck, ChevronRight, Heart, MapPin } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 
