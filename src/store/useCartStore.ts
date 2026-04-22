@@ -15,22 +15,50 @@ export interface CartItem {
 
 interface CartState {
   items: CartItem[];
+  selectedShipping: 'pickup' | 'home';
+  selectedPayment: 'card' | 'upi' | 'wallet';
   isCartOpen: boolean;
   addItem: (item: CartItem) => void;
   removeItem: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
+  setShipping: (mode: 'pickup' | 'home') => void;
+  setPayment: (method: 'card' | 'upi' | 'wallet') => void;
   toggleCart: () => void;
   openCart: () => void;
   closeCart: () => void;
   clearCart: () => void;
   getCartItemsCount: () => number;
   getCartTotal: () => number;
+  seedDummyData: () => void;
 }
+
+const DUMMY_ITEMS: CartItem[] = [
+  {
+    id: 'cart-1',
+    product_id: 'p-101',
+    title: 'Xiaomi 365 Premium Electric Scooter',
+    price: 484.99,
+    quantity: 1,
+    image: 'https://m.media-amazon.com/images/I/71X8X-LqSFL._AC_SL1500_.jpg',
+    category: 'E-Mobility'
+  },
+  {
+    id: 'cart-2',
+    product_id: 'p-102',
+    title: 'Ninebot ES2 Pro Edition',
+    price: 489.99,
+    quantity: 3,
+    image: 'https://m.media-amazon.com/images/I/61Hjg-H-2AL._AC_SL1500_.jpg',
+    category: 'E-Mobility'
+  }
+];
 
 export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
       items: [],
+      selectedShipping: 'pickup',
+      selectedPayment: 'card',
       isCartOpen: false,
 
       addItem: (item) =>
@@ -58,6 +86,9 @@ export const useCartStore = create<CartState>()(
           ),
         })),
 
+      setShipping: (mode) => set({ selectedShipping: mode }),
+      setPayment: (method) => set({ selectedPayment: method }),
+
       toggleCart: () => set((state) => ({ isCartOpen: !state.isCartOpen })),
       openCart: () => set({ isCartOpen: true }),
       closeCart: () => set({ isCartOpen: false }),
@@ -72,6 +103,13 @@ export const useCartStore = create<CartState>()(
         const { items } = get();
         return items.reduce((total, item) => total + item.price * item.quantity, 0);
       },
+
+      seedDummyData: () => {
+        const { items } = get();
+        if (items.length === 0) {
+          set({ items: DUMMY_ITEMS });
+        }
+      }
     }),
     {
       name: 'cart-storage',

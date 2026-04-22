@@ -1,175 +1,314 @@
 'use client';
 
-import { useCartStore, CartItem } from '@/store/useCartStore';
+import { useEffect } from 'react';
+import { useCartStore } from '@/store/useCartStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import Link from 'next/link';
-import { ShoppingBag, Trash2, Plus, Minus, ShieldCheck, ChevronRight, Heart, MapPin } from 'lucide-react';
+import { 
+  Plus, 
+  Minus, 
+  Trash2, 
+  Truck, 
+  Store, 
+  CreditCard, 
+  Wallet, 
+  Smartphone, 
+  ChevronLeft, 
+  X,
+  CreditCard as CardIcon
+} from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 
 export default function CartPage() {
-  const { items, removeItem, updateQuantity, getCartTotal } = useCartStore();
+  const { 
+    items, 
+    removeItem, 
+    updateQuantity, 
+    getCartTotal, 
+    selectedShipping, 
+    selectedPayment, 
+    setShipping, 
+    setPayment,
+    seedDummyData 
+  } = useCartStore();
   const { user } = useAuthStore();
   const router = useRouter();
 
-  const totalAmount = getCartTotal();
-  const shipping = totalAmount > 499 ? 0 : 49;
-  const discount = Math.round(totalAmount * 0.15); // Simulated 15% discount
-  const finalTotal = totalAmount + shipping - discount;
+  // Seed dummy data if cart is empty (for demo purposes)
+  useEffect(() => {
+    seedDummyData();
+  }, [seedDummyData]);
 
-  const handlePlaceOrder = () => {
+  const subtotal = getCartTotal();
+  const shippingFee = selectedShipping === 'home' ? 9.90 : 0;
+  const finalTotal = subtotal + shippingFee;
+
+  const handleCheckout = () => {
+    // Navigate to checkout where state is already synced via the store
     router.push('/checkout');
   };
 
   if (items.length === 0) {
     return (
-      <div className="min-h-[70vh] flex flex-col items-center justify-center bg-[#f1f3f6] p-4">
-        <div className="bg-white p-12 rounded-xl shadow-sm text-center max-w-lg w-full">
-          <div className="w-48 h-48 mx-auto mb-6 bg-indigo-50 rounded-full flex items-center justify-center">
-             <img src="https://cdni.iconscout.com/illustration/premium/thumb/empty-cart-2130356-1800917.png" alt="Empty Cart" className="w-32 h-32 object-contain opacity-80" />
+      <div className="min-h-[80vh] flex flex-col items-center justify-center bg-gray-50/50 p-4">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center max-w-md"
+        >
+          <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mx-auto mb-8 shadow-sm">
+            <X className="w-10 h-10 text-gray-300" />
           </div>
-          <h2 className="text-xl font-black text-gray-900 mb-2 tracking-tight">Your cart is empty!</h2>
-          <p className="text-gray-400 text-sm font-medium mb-8">Add items to it now to start your style journey.</p>
-          <Link href="/apparel" className="bg-[#2874f0] text-white px-10 py-3.5 rounded-lg font-black uppercase text-sm shadow-lg hover:shadow-indigo-200 transition-all">
-            Shop Now
+          <h2 className="text-3xl font-black text-gray-900 mb-4 tracking-tight">Your Cart is Empty</h2>
+          <p className="text-gray-400 font-medium mb-10">Looks like you haven't added anything to your cart yet.</p>
+          <Link 
+            href="/apparel" 
+            className="inline-flex items-center gap-2 bg-gray-900 text-white px-8 py-4 rounded-xl font-black uppercase text-sm tracking-widest hover:bg-gray-800 transition-all shadow-lg active:scale-95"
+          >
+            Start Shopping
           </Link>
-        </div>
+        </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#F1F3F6] pb-24">
-      <div className="max-w-[1400px] mx-auto px-4 pt-6">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-          
-          {/* Left Column: Cart Items */}
-          <div className="lg:col-span-8 space-y-4">
-            <div className="bg-white p-4 rounded-t-xl border-b border-gray-100 flex items-center justify-between">
-               <h1 className="text-base font-black text-gray-800 uppercase tracking-wider">My Cart ({items.length})</h1>
-               <div className="flex items-center gap-2 text-xs font-black text-gray-500">
-                  <MapPin className="w-3.5 h-3.5" />
-                  Deliver to: <span className="text-gray-900">New York - 10001</span>
-               </div>
-            </div>
-
-            <div className="bg-white shadow-sm overflow-hidden rounded-b-xl divide-y divide-gray-100">
-              <AnimatePresence>
-                {items.map((item) => (
-                  <motion.div
-                    key={item.id}
-                    layout
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    className="p-6 flex flex-col sm:flex-row gap-6 hover:bg-gray-50/50 transition-colors"
-                  >
-                    {/* Item Image */}
-                    <div className="w-28 h-28 shrink-0 mx-auto sm:mx-0">
-                      <Link href={`/products/${item.product_id}`}>
-                        <img 
-                          src={item.image} 
-                          alt={item.title} 
-                          className="w-full h-full object-contain p-2 bg-white border border-gray-100 rounded-lg" 
-                        />
-                      </Link>
-                      <div className="mt-4 flex items-center justify-center border border-gray-100 rounded-md overflow-hidden bg-white">
-                        <button 
-                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                          className="p-1.5 hover:bg-gray-50 transition-colors text-gray-500"
-                        >
-                          <Minus className="w-3 h-3" />
-                        </button>
-                        <span className="w-8 text-center text-xs font-black text-gray-900 border-x border-gray-100">{item.quantity}</span>
-                        <button 
-                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                          className="p-1.5 hover:bg-gray-50 transition-colors text-gray-500"
-                        >
-                          <Plus className="w-3 h-3" />
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Item Details */}
-                    <div className="flex-1 space-y-2">
-                      <div className="flex justify-between items-start">
-                         <Link href={`/products/${item.product_id}`} className="text-[15px] font-medium text-gray-800 hover:text-[#2874f0] transition-colors line-clamp-1">
-                            {item.title}
-                         </Link>
-                         <p className="text-[17px] font-black text-gray-900">${(item.price * item.quantity).toLocaleString()}</p>
-                      </div>
-                      <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">{item.category}</p>
-                      <p className="text-xs font-black text-[#388e3c]">Special Price: extra 15% off included</p>
-                      
-                      <div className="flex items-center gap-6 pt-4">
-                         <button 
-                          onClick={() => removeItem(item.id)}
-                          className="text-[13px] font-black text-gray-700 hover:text-red-500 transition-colors flex items-center gap-2 uppercase tracking-wide"
-                         >
-                            <Trash2 className="w-4 h-4" /> Remove
-                         </button>
-                         <button className="text-[13px] font-black text-gray-700 hover:text-[#2874f0] transition-colors flex items-center gap-2 uppercase tracking-wide">
-                            <Heart className="w-4 h-4" /> Save For Later
-                         </button>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            </div>
-
-            {/* Bottom Checkout Button Area */}
-            <div className="bg-white p-4 shadow-md flex justify-end rounded-xl">
-               <button 
-                onClick={handlePlaceOrder}
-                className="bg-[#fb641b] text-white px-14 py-4 rounded-sm font-black uppercase text-sm shadow-lg hover:shadow-orange-200 transition-all active:scale-95"
-               >
-                 Place Order
-               </button>
-            </div>
-          </div>
-
-          {/* Right Column: Price Summary */}
-          <div className="lg:col-span-4 lg:sticky lg:top-24">
-             <div className="bg-white shadow-sm rounded-xl overflow-hidden border border-gray-100">
-                <div className="p-4 border-b border-gray-100">
-                   <h2 className="text-[13px] font-black text-gray-400 uppercase tracking-widest">Price Details</h2>
-                </div>
-                <div className="p-6 space-y-4">
-                   <div className="flex justify-between text-sm font-medium">
-                      <span className="text-gray-700">Price ({items.length} items)</span>
-                      <span className="text-gray-900">${totalAmount.toLocaleString()}</span>
-                   </div>
-                   <div className="flex justify-between text-sm font-medium">
-                      <span className="text-gray-700">Discount</span>
-                      <span className="text-[#388e3c] font-black">− ${discount.toLocaleString()}</span>
-                   </div>
-                   <div className="flex justify-between text-sm font-medium">
-                      <span className="text-gray-700">Shipping Fee</span>
-                      <span className={shipping === 0 ? 'text-[#388e3c] font-black' : 'text-gray-900 underline'}>
-                        {shipping === 0 ? 'FREE' : `$${shipping}`}
-                      </span>
-                   </div>
-                   
-                   <div className="border-t border-dashed border-gray-200 pt-5 mt-5 flex justify-between">
-                      <span className="text-base font-black text-gray-800">Total Amount</span>
-                      <span className="text-base font-black text-gray-800">${finalTotal.toLocaleString()}</span>
-                   </div>
-                </div>
-                <div className="p-4 bg-green-50/50 border-t border-green-100">
-                   <p className="text-sm font-black text-[#388e3c] text-center">
-                     You will save ${discount.toLocaleString()} on this order!
-                   </p>
-                </div>
-             </div>
-
-             <div className="mt-4 flex items-center gap-3 px-4 text-gray-400 text-xs font-bold uppercase tracking-widest justify-center">
-                <ShieldCheck className="w-5 h-5 opacity-40 shrink-0" />
-                <span>Safe and Secure Payments. 100% Authentic products.</span>
-             </div>
-          </div>
-
+    <div className="min-h-screen bg-[#F8F9FA] pb-24 pt-12">
+      <div className="max-w-[1200px] mx-auto px-6">
+        
+        {/* Header Section */}
+        <div className="flex items-end justify-between mb-12">
+          <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tighter">My Cart</h1>
+          <Link 
+            href="/apparel" 
+            className="flex items-center gap-2 text-[10px] md:text-xs font-black text-gray-400 uppercase tracking-widest hover:text-gray-900 transition-colors"
+          >
+            <ChevronLeft className="w-4 h-4" /> Continue shopping
+          </Link>
         </div>
+
+        {/* Unified Cart Container */}
+        <div className="bg-white rounded-[32px] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.08)] overflow-hidden border border-gray-100">
+          
+          {/* Cart Table Headers - Hidden on Mobile */}
+          <div className="hidden md:grid grid-cols-12 gap-4 px-10 py-8 border-b border-gray-50 text-[11px] font-black text-gray-300 uppercase tracking-[0.2em]">
+            <div className="col-span-6">Product</div>
+            <div className="col-span-2 text-center">Price</div>
+            <div className="col-span-2 text-center">Qty</div>
+            <div className="col-span-2 text-right">Total</div>
+          </div>
+
+          {/* Cart Items */}
+          <div className="divide-y divide-gray-50">
+            <AnimatePresence>
+              {items.map((item) => (
+                <motion.div
+                  key={item.id}
+                  layout
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  className="grid grid-cols-12 gap-4 px-6 md:px-10 py-8 md:py-10 items-center group relative"
+                >
+                  {/* Product Info */}
+                  <div className="col-span-12 md:col-span-6 flex gap-4 md:gap-6 items-center">
+                    <div className="w-20 h-20 md:w-24 md:h-24 bg-gray-50 rounded-2xl overflow-hidden shadow-sm border border-gray-100 flex items-center justify-center p-2 shrink-0">
+                      <img 
+                        src={item.image} 
+                        alt={item.title} 
+                        className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500" 
+                      />
+                    </div>
+                    <div className="space-y-1 min-w-0">
+                      <Link href={`/products/${item.product_id}`} className="text-base md:text-lg font-black text-gray-900 hover:text-red-500 transition-colors block truncate">
+                        {item.title}
+                      </Link>
+                      <p className="text-[10px] md:text-[11px] font-black text-gray-400 uppercase tracking-widest">#{item.id.slice(0, 8)}</p>
+                      <p className="hidden md:block text-xs text-gray-400 font-medium pt-1">
+                        Category: <span className="text-gray-600 font-bold">{item.category}</span>
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Price - Hidden on Mobile */}
+                  <div className="hidden md:block col-span-2 text-center">
+                    <p className="text-base font-black text-gray-900">${item.price.toLocaleString()}</p>
+                  </div>
+
+                  {/* Quantity Controls */}
+                  <div className="col-span-6 md:col-span-2 flex md:justify-center">
+                    <div className="flex items-center gap-3 md:gap-4 bg-gray-50 px-3 md:px-4 py-1.5 md:py-2 rounded-full border border-gray-100">
+                      <button 
+                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                        className="text-gray-400 hover:text-gray-900 transition-colors"
+                      >
+                        <Minus className="w-3 h-3" />
+                      </button>
+                      <span className="text-xs md:text-sm font-black text-gray-900 w-4 text-center">{item.quantity}</span>
+                      <button 
+                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                        className="text-gray-400 hover:text-gray-900 transition-colors"
+                      >
+                        <Plus className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Total & Remove */}
+                  <div className="col-span-6 md:col-span-2 text-right relative">
+                    <p className="text-base md:text-lg font-black text-gray-900">${(item.price * item.quantity).toLocaleString()}</p>
+                    <button 
+                      onClick={() => removeItem(item.id)}
+                      className="absolute -right-4 top-1/2 -translate-y-1/2 md:opacity-0 group-hover:opacity-100 transition-all text-gray-300 hover:text-red-500 p-2"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+
+          {/* Bottom Section: Shipping & Payment & Summary */}
+          <div className="bg-gray-50/50 p-6 md:p-10 border-t border-gray-100">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+              
+              {/* Left Side: Choices */}
+              <div className="lg:col-span-7 space-y-8">
+                {/* Shipping Selection */}
+                <div className="space-y-4">
+                  <h3 className="text-[13px] font-black text-gray-900 uppercase tracking-widest">Choose shipping mode:</h3>
+                  <div className="space-y-3">
+                    <label 
+                      className={`flex items-center gap-4 p-5 rounded-2xl border-2 cursor-pointer transition-all ${
+                        selectedShipping === 'pickup' ? 'border-red-500 bg-white shadow-md' : 'border-gray-100 bg-white/50 hover:border-gray-200'
+                      }`}
+                    >
+                      <input 
+                        type="radio" 
+                        name="shipping" 
+                        checked={selectedShipping === 'pickup'} 
+                        onChange={() => setShipping('pickup')}
+                        className="hidden" 
+                      />
+                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedShipping === 'pickup' ? 'border-red-500 bg-red-500' : 'border-gray-200'}`}>
+                        {selectedShipping === 'pickup' && <div className="w-2 h-2 bg-white rounded-full" />}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex justify-between items-center">
+                          <p className="text-[13px] font-black text-gray-900">Store pickup <span className="text-gray-400 font-medium ml-2">(In 20 min)</span></p>
+                          <p className="text-[13px] font-black text-gray-900 uppercase">Free</p>
+                        </div>
+                      </div>
+                    </label>
+
+                    <label 
+                      className={`flex items-center gap-4 p-5 rounded-2xl border-2 cursor-pointer transition-all ${
+                        selectedShipping === 'home' ? 'border-red-500 bg-white shadow-md' : 'border-gray-100 bg-white/50 hover:border-gray-200'
+                      }`}
+                    >
+                      <input 
+                        type="radio" 
+                        name="shipping" 
+                        checked={selectedShipping === 'home'} 
+                        onChange={() => setShipping('home')}
+                        className="hidden" 
+                      />
+                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedShipping === 'home' ? 'border-red-500 bg-red-500' : 'border-gray-200'}`}>
+                        {selectedShipping === 'home' && <div className="w-2 h-2 bg-white rounded-full" />}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <p className="text-[13px] font-black text-gray-900">Delivery at home <span className="text-gray-400 font-medium ml-2">(Under 2-4 days)</span></p>
+                            <p className="text-[11px] text-gray-400 font-medium mt-0.5">At 43 Glonridgo Ave, Brooklyn, NY 11220</p>
+                          </div>
+                          <p className="text-[13px] font-black text-gray-900 uppercase">9.90</p>
+                        </div>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+
+                {/* Payment Selection */}
+                <div className="space-y-4">
+                  <h3 className="text-[13px] font-black text-gray-900 uppercase tracking-widest">Choose payment method:</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    {[
+                      { id: 'card', label: 'Credit Card', icon: CardIcon },
+                      { id: 'upi', label: 'UPI / Net', icon: Smartphone },
+                      { id: 'wallet', label: 'Wallets', icon: Wallet },
+                    ].map((method) => (
+                      <label 
+                        key={method.id}
+                        className={`flex flex-col items-center gap-3 p-6 rounded-2xl border-2 cursor-pointer transition-all ${
+                          selectedPayment === method.id ? 'border-gray-900 bg-white shadow-md' : 'border-gray-100 bg-white/50 hover:border-gray-200'
+                        }`}
+                      >
+                        <input 
+                          type="radio" 
+                          name="payment" 
+                          checked={selectedPayment === (method.id as any)} 
+                          onChange={() => setPayment(method.id as any)}
+                          className="hidden" 
+                        />
+                        <method.icon className={`w-6 h-6 ${selectedPayment === method.id ? 'text-gray-900' : 'text-gray-300'}`} />
+                        <p className={`text-[11px] font-black uppercase tracking-wider ${selectedPayment === method.id ? 'text-gray-900' : 'text-gray-400'}`}>
+                          {method.label}
+                        </p>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Side: Price Summary */}
+              <div className="lg:col-span-5 flex flex-col justify-end">
+                <div className="space-y-6">
+                  <div className="space-y-3">
+                    <div className="flex justify-between text-[11px] font-black text-gray-400 uppercase tracking-widest">
+                      <span>Subtotal (TTC)</span>
+                      <span className="text-gray-900">${subtotal.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between text-[11px] font-black text-gray-400 uppercase tracking-widest">
+                      <span>Shipping</span>
+                      <span className="text-gray-900">{shippingFee === 0 ? 'Free' : `$${shippingFee.toLocaleString()}`}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between items-center py-6 border-t border-gray-100">
+                    <span className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Total</span>
+                    <span className="text-3xl font-black text-gray-900">${finalTotal.toLocaleString()}</span>
+                  </div>
+
+                  <button 
+                    onClick={handleCheckout}
+                    className="w-full bg-[#FF4B4B] text-white py-6 rounded-2xl font-black uppercase tracking-[0.2em] text-sm shadow-[0_20px_40px_-10px_rgba(255,75,75,0.3)] hover:shadow-[0_24px_48px_-12px_rgba(255,75,75,0.4)] hover:bg-[#FF3B3B] transition-all active:scale-[0.98] flex items-center justify-between px-10"
+                  >
+                    <span>Checkout</span>
+                    <span>${finalTotal.toLocaleString()}</span>
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        {/* Security / Trust Badges */}
+        <div className="mt-12 flex flex-wrap justify-center items-center gap-6 md:gap-10 opacity-30 grayscale hover:opacity-100 hover:grayscale-0 transition-all duration-700">
+          <div className="flex items-center gap-2 text-[10px] md:text-xs font-black uppercase tracking-widest">
+            <Truck className="w-5 h-5" /> Fast Delivery
+          </div>
+          <div className="flex items-center gap-2 text-[10px] md:text-xs font-black uppercase tracking-widest">
+            <CardIcon className="w-5 h-5" /> Secure Payment
+          </div>
+          <div className="flex items-center gap-2 text-[10px] md:text-xs font-black uppercase tracking-widest">
+            <Store className="w-5 h-5" /> Easy Returns
+          </div>
+        </div>
+
       </div>
     </div>
   );

@@ -19,10 +19,10 @@ const PAYMENT_METHODS = [
 export default function CheckoutPage() {
   const router = useRouter();
   const [step, setStep] = useState<'ADDRESS' | 'PAYMENT' | 'SUCCESS'>('ADDRESS');
-  const { items, clearCart, getCartTotal } = useCartStore();
+  const { items, clearCart, getCartTotal, selectedShipping, selectedPayment: storePayment } = useCartStore();
   const { user } = useAuthStore();
   const [isProcessing, setIsProcessing] = useState(false);
-  const [selectedPayment, setSelectedPayment] = useState('upi');
+  const [selectedPayment, setSelectedPayment] = useState(storePayment || 'upi');
   const [upiId, setUpiId] = useState('');
   const [address, setAddress] = useState({
     name: user?.name || '',
@@ -36,7 +36,7 @@ export default function CheckoutPage() {
   const [orderNumber] = useState(`KORA-${Math.floor(100000 + Math.random() * 900000)}`);
 
   const subtotal = getCartTotal();
-  const shipping = subtotal > 499 ? 0 : 49;
+  const shipping = selectedShipping === 'home' ? 9.90 : 0;
   const discount = Math.round(subtotal * 0.15);
   const total = subtotal + shipping - discount;
 
